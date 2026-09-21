@@ -1,0 +1,37 @@
+networks:
+  gitea_net:
+    external: false
+    name: gitea_net
+
+services:
+  gitea:
+    image: gitea/gitea:main-nightly
+    container_name: gitea
+    user: "${HOST_UID}:${HOST_GID}"
+    networks:
+      - gitea_net
+    volumes:
+      - ./data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "22:22"
+
+  runner:
+    image: gitea/runner:latest
+    restart: unless-stopped
+    container_name: gitea-runner
+    networks:
+      - gitea_net
+    depends_on:
+      - gitea  # whatever your gitea service is named
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+      - ./config.yaml:/config.yaml
+    environment:
+      - GITEA_INSTANCE_URL=http://gitea:3000/ # adjust if your service name differs
+      - GITEA_RUNNER_REGISTRATION_TOKEN={Registration Token} # replace with your actual token
+      - GITEA_RUNNER_NAME=local-runner
+      - CONFIG_FILE=/config.yaml

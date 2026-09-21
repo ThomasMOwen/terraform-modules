@@ -1,0 +1,54 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  terraform-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Terraform Init
+        run: |
+          docker run --rm \
+            --network gitea_net \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/examples \
+            hashicorp/terraform:latest init
+
+      - name: Terraform Format Check
+        run: |
+          docker run --rm \
+            --network gitea_net \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            hashicorp/terraform:latest fmt -check -recursive
+
+      - name: Terraform Validate
+        run: |
+          docker run --rm \
+            --network gitea_net \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace/examples \
+            hashicorp/terraform:latest validate
+
+      - name: Run tflint
+        run: |
+            docker run --rm \
+              --network gitea_net \
+              -v ${{ github.workspace }}:/workspace \
+              -w /workspace \
+              ghcr.io/terraform-linters/tflint:latest --recursive
+
+      - name: Scan IaC configs
+        run: |
+          docker run --rm \
+            --network gitea_net \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            aquasec/trivy:latest config .
