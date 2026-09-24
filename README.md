@@ -42,12 +42,12 @@ make gitea
 
 This creates the gitea instance and action runner required for CI/CD using docker compose and the config in compose.yml file
 
-### 4. Access the platform
+### 3. Access the platform
 
 |`https://localhost:3000` | Set up an admin user and then login |
 
 
-### 5. Connect the runner
+### 4. Connect the runner
 
 1. In Gitea, go to Site Administration → Actions → Runners
 2. Click Create new Runner and copy the token
